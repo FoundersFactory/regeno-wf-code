@@ -63,7 +63,9 @@ function initMap(sbiNumber, firstName, lastName) {
 
         features.forEach(obj => {
             const row = document.createElement('div');
+            row.classList.add('table-row');
             const form = document.createElement('form');
+            form.classList.add('table-form');
             form.innerHTML = `
             <input type="hidden" name="ID" class="hidden-input" value="${obj.properties.ID}">
             <input type="text" name="SHEET_ID" class="table-input sheet-id" value="${obj.properties.SHEET_ID}">
@@ -199,7 +201,7 @@ function initMap(sbiNumber, firstName, lastName) {
                 padding: 20 // Adjust padding as needed
             });
 
-            map.loadImage('/check-circle.png', (error, image) => {
+            map.loadImage('https://uploads-ssl.webflow.com/660bcbc48b7009afef8be06d/6669cc4fa365d2efac2b2463_check-circle.png', (error, image) => {
                 if (error) throw error;
                 map.addImage('checkbox-image', image);
             });
