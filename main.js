@@ -120,31 +120,45 @@ function initMap(sbiNumber, firstName, lastName) {
         const modalContent = document.getElementById('modal-content');
         const modalClose = document.getElementById('modal-close');
 
-        modalContent.innerHTML = `
-        <h2>Edit Feature</h2>
-        <form id="modal-form">
-            <input type="hidden" class="hidden-input" name="ID" value="${feature.properties.ID}">
-            <label for="SHEET_ID" class="modal-label sheet-id">Sheet ID:</label>
-            <input type="text" name="SHEET_ID" class="modal-input sheet-id" value="${feature.properties.SHEET_ID}">
-            <label for="PARCEL_ID" class="modal-label parcel-id">Parcel ID:</label>
-            <input type="text" name="PARCEL_ID" class="modal-input parcel-id" value="${feature.properties.PARCEL_ID}">
-            <label for="DESCRIPTION" class="modal-label description">Current land use:</label>
-            <input type="text" name="DESCRIPTION" class="modal-input description" value="${feature.properties.DESCRIPTION}">
-            <label for="AREA_HA" class="modal-label area-ha">Hectares:</label>
-            <input type="text" name="AREA_HA" class="modal-input area-ha" value="${feature.properties.AREA_HA}">
-            <label for="LAND_COVER_CLASS_CODE" class="modal-label land-cover-class-code">Land cover class code:</label>
-            <input type="text" name="LAND_COVER_CLASS_CODE" class="modal-input land-cover-class-code" value="${feature.properties.LAND_COVER_CLASS_CODE}">
-            <label for="SHAPE_AREA" class="modal-label shape-area">Shape area:</label>
-            <input type="text" name="SHAPE_AREA" class="modal-input shape-area" value="${feature.properties.SHAPE_AREA}">
-            <label for="SHAPE_PERIMETER" class="modal-label shape-perimeter">Shape perimeter:</label>
-            <input type="text" name="SHAPE_PERIMETER" class="modal-input shape-perimeter" value="${feature.properties.SHAPE_PERIMETER}">
-            <label for="CROP" class="modal-label crop">Crop:</label>
-            <input type="text" name="CROP" class="modal-input crop" value="${feature.properties.CROP ?? ""}">
-            <label for="CREATED_ON" class="modal-label created-on">Created on::</label>
-            <input type="text" name="CREATED_ON" class="modal-input created-on" value="${convertDate(feature.properties.CREATED_ON)}">
-            <button type="submit" class="modal-submit">Update</button>
-        </form>
-    `;
+        const form = document.createElement('form');
+        form.id = 'modal-form';
+        form.classList.add('modal-form');
+
+        const elements = [
+            { tag: 'input', type: 'hidden', className: 'hidden-input', name: 'ID', value: feature.properties.ID },
+            { tag: 'label', className: 'modal-label sheet-id', text: 'Sheet ID:' },
+            { tag: 'input', type: 'text', className: 'modal-input sheet-id', name: 'SHEET_ID', value: feature.properties.SHEET_ID },
+            { tag: 'label', className: 'modal-label parcel-id', text: 'Parcel ID:' },
+            { tag: 'input', type: 'text', className: 'modal-input parcel-id', name: 'PARCEL_ID', value: feature.properties.PARCEL_ID },
+            { tag: 'label', className: 'modal-label description', text: 'Current land use:' },
+            { tag: 'input', type: 'text', className: 'modal-input description', name: 'DESCRIPTION', value: feature.properties.DESCRIPTION },
+            { tag: 'label', className: 'modal-label area-ha', text: 'Hectares:' },
+            { tag: 'input', type: 'text', className: 'modal-input area-ha', name: 'AREA_HA', value: feature.properties.AREA_HA },
+            { tag: 'label', className: 'modal-label land-cover-class-code', text: 'Land cover class code:' },
+            { tag: 'input', type: 'text', className: 'modal-input land-cover-class-code', name: 'LAND_COVER_CLASS_CODE', value: feature.properties.LAND_COVER_CLASS_CODE },
+            { tag: 'label', className: 'modal-label shape-area', text: 'Shape area:' },
+            { tag: 'input', type: 'text', className: 'modal-input shape-area', name: 'SHAPE_AREA', value: feature.properties.SHAPE_AREA },
+            { tag: 'label', className: 'modal-label shape-perimeter', text: 'Shape perimeter:' },
+            { tag: 'input', type: 'text', className: 'modal-input shape-perimeter', name: 'SHAPE_PERIMETER', value: feature.properties.SHAPE_PERIMETER },
+            { tag: 'label', className: 'modal-label crop', text: 'Crop:' },
+            { tag: 'input', type: 'text', className: 'modal-input crop', name: 'CROP', value: feature.properties.CROP ?? "" },
+            { tag: 'label', className: 'modal-label created-on', text: 'Created on:' },
+            { tag: 'input', type: 'text', className: 'modal-input created-on', name: 'CREATED_ON', value: convertDate(feature.properties.CREATED_ON) },
+            { tag: 'button', type: 'submit', className: 'modal-submit', text: 'Update' }
+        ];
+
+        elements.forEach(el => {
+            const element = document.createElement(el.tag);
+            if (el.text) element.textContent = el.text;
+            if (el.type) element.type = el.type;
+            if (el.className) element.className = el.className;
+            if (el.name) element.name = el.name;
+            if (el.value) element.value = el.value;
+            form.appendChild(element);
+        });
+
+        modalContent.innerHTML = '<h2>Edit Feature</h2>';
+        modalContent.appendChild(form);
 
         //Enables transitions assuming one is set against the modal's css
         modal.style.display = 'block';
