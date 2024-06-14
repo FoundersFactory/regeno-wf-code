@@ -68,15 +68,15 @@ function initMap(sbiNumber, firstName, lastName) {
             form.classList.add('table-form');
             form.innerHTML = `
             <input type="hidden" name="ID" class="hidden-input" value="${obj.properties.ID}">
-            <input type="text" name="SHEET_ID" class="table-input sheet-id" value="${obj.properties.SHEET_ID}">
-            <input type="text" name="PARCEL_ID" class="table-input parcel-id" value="${obj.properties.PARCEL_ID}">
-            <input type="text" name="DESCRIPTION" class="table-input description" value="${obj.properties.DESCRIPTION}">
-            <input type="text" name="AREA_HA" class="table-input area-ha" value="${obj.properties.AREA_HA}">
-            <input type="text" name="LAND_COVER_CLASS_CODE" class="table-input land-cover-class-code" value="${obj.properties.LAND_COVER_CLASS_CODE}">
-            <input type="text" name="SHAPE_AREA" class="table-input shape-area" value="${obj.properties.SHAPE_AREA}">
-            <input type="text" name="SHAPE_PERIMETER" class="table-input shape-perimeter" value="${obj.properties.SHAPE_PERIMETER}">
-            <input type="text" name="CROP" class="table-input crop" value="${obj.properties.CROP ?? ""}">
-            <input type="text" name="CREATED_ON" class="table-input created-on" value="${convertDate(obj.properties.CREATED_ON)}">
+            <input type="text" name="SHEET_ID" class="table-cell-wrapper sheet-id" value="${obj.properties.SHEET_ID}">
+            <input type="text" name="PARCEL_ID" class="table-cell-wrapper parcel-id" value="${obj.properties.PARCEL_ID}">
+            <input type="text" name="DESCRIPTION" class="table-cell-wrapper description" value="${obj.properties.DESCRIPTION}">
+            <input type="text" name="AREA_HA" class="table-cell-wrapper area-ha" value="${obj.properties.AREA_HA}">
+            <input type="text" name="LAND_COVER_CLASS_CODE" class="table-cell-wrapper land-cover-class-code" value="${obj.properties.LAND_COVER_CLASS_CODE}">
+            <input type="text" name="SHAPE_AREA" class="table-cell-wrapper shape-area" value="${obj.properties.SHAPE_AREA}">
+            <input type="text" name="SHAPE_PERIMETER" class="table-cell-wrapper shape-perimeter" value="${obj.properties.SHAPE_PERIMETER}">
+            <input type="text" name="CROP" class="table-cell-wrapper crop" value="${obj.properties.CROP ?? ""}">
+            <input type="text" name="CREATED_ON" class="table-cell-wrapper created-on" value="${convertDate(obj.properties.CREATED_ON)}">
             <button type="submit" class="table-submit">Submit</button>
         `;
 
