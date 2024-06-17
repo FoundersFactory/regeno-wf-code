@@ -393,6 +393,10 @@ function initMap(sbiNumber, firstName, lastName) {
                         openModal(features[0], geojson, map);
                     }
                 });
+
+                setInterval(function() {
+                    map.resize();
+                }, 1000);
             });
         })
         .catch(error => {
