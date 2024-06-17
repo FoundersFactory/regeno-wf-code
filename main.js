@@ -171,7 +171,6 @@ function initMap(sbiNumber, firstName, lastName) {
             }
         });
         
-        modalContent.innerHTML = '<h2>Edit Feature</h2>';
         modalContent.appendChild(form);
 
         modal.style.display = 'block';
