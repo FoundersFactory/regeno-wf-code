@@ -170,7 +170,7 @@ function initMap(sbiNumber, firstName, lastName) {
                 if (elements[index + 1].value) div.lastChild.value = elements[index + 1].value;
                 form.appendChild(div);
             } else if (el.tag !== 'input') {
-                if (el.tagName.toLowerCase() === 'button') {
+                if (el.tag === 'button') {
                     element.setAttribute('href', '#');
                 }
                 form.appendChild(element);
