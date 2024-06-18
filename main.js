@@ -68,6 +68,8 @@ function initMap(sbiNumber, firstName, lastName) {
             form.classList.add('table-form');
             form.innerHTML = `
             <input type="hidden" name="ID" class="hidden-input" value="${obj.properties.ID}">
+            <input type="text" name="CROP" class="table-cell-wrapper crop" value="${obj.properties.CROP ?? ""}">
+            <input type="text" name="FIELD_NAME" class="table-cell-wrapper field_name" value="${obj.properties.FIELD_NAME ?? ""}">
             <input type="text" name="SHEET_ID" class="table-cell-wrapper sheet-id" value="${obj.properties.SHEET_ID}">
             <input type="text" name="PARCEL_ID" class="table-cell-wrapper parcel-id" value="${obj.properties.PARCEL_ID}">
             <input type="text" name="DESCRIPTION" class="table-cell-wrapper description" value="${obj.properties.DESCRIPTION}">
@@ -75,7 +77,6 @@ function initMap(sbiNumber, firstName, lastName) {
             <input type="text" name="LAND_COVER_CLASS_CODE" class="table-cell-wrapper land-cover-class-code" value="${obj.properties.LAND_COVER_CLASS_CODE}">
             <input type="text" name="SHAPE_AREA" class="table-cell-wrapper shape-area" value="${obj.properties.SHAPE_AREA}">
             <input type="text" name="SHAPE_PERIMETER" class="table-cell-wrapper shape-perimeter" value="${obj.properties.SHAPE_PERIMETER}">
-            <input type="text" name="CROP" class="table-cell-wrapper crop" value="${obj.properties.CROP ?? ""}">
             <input type="text" name="CREATED_ON" class="table-cell-wrapper created-on" value="${convertDate(obj.properties.CREATED_ON)}">
             <button type="submit" class="table-submit">Submit</button>
         `;
@@ -126,6 +127,10 @@ function initMap(sbiNumber, firstName, lastName) {
         
         const elements = [
             { tag: 'input', type: 'hidden', className: 'hidden-input', name: 'ID', value: feature.properties.ID },
+            { tag: 'label', className: 'f-txt-field-label sm field-name', text: 'Field name:' },
+            { tag: 'input', type: 'text', className: 'f-input-field sm w-input field-name', name: 'FIELD_NAME', value: feature.properties.FIELD_NAME ?? "" },
+            { tag: 'label', className: 'f-txt-field-label sm crop', text: 'Crop:' },
+            { tag: 'input', type: 'text', className: 'f-input-field sm w-input crop', name: 'CROP', value: feature.properties.CROP ?? "" },
             { tag: 'label', className: 'f-txt-field-label sm sheet-id', text: 'Sheet ID:' },
             { tag: 'input', type: 'text', className: 'f-input-field sm w-input sheet-id', name: 'SHEET_ID', value: feature.properties.SHEET_ID },
             { tag: 'label', className: 'f-txt-field-label sm parcel-id', text: 'Parcel ID:' },
@@ -140,8 +145,6 @@ function initMap(sbiNumber, firstName, lastName) {
             { tag: 'input', type: 'text', className: 'f-input-field sm w-input shape-area', name: 'SHAPE_AREA', value: feature.properties.SHAPE_AREA },
             { tag: 'label', className: 'f-txt-field-label sm shape-perimeter', text: 'Shape perimeter:' },
             { tag: 'input', type: 'text', className: 'f-input-field sm w-input shape-perimeter', name: 'SHAPE_PERIMETER', value: feature.properties.SHAPE_PERIMETER },
-            { tag: 'label', className: 'f-txt-field-label sm crop', text: 'Crop:' },
-            { tag: 'input', type: 'text', className: 'f-input-field sm w-input crop', name: 'CROP', value: feature.properties.CROP ?? "" },
             { tag: 'label', className: 'f-txt-field-label sm created-on', text: 'Created on:' },
             { tag: 'input', type: 'text', className: 'f-input-field sm w-input created-on', name: 'CREATED_ON', value: convertDate(feature.properties.CREATED_ON) },
             { tag: 'button', type: 'submit', className: 'modal-submit', text: 'Update' }
@@ -167,6 +170,9 @@ function initMap(sbiNumber, firstName, lastName) {
                 if (elements[index + 1].value) div.lastChild.value = elements[index + 1].value;
                 form.appendChild(div);
             } else if (el.tag !== 'input') {
+                if (el.tagName.toLowerCase() === 'button') {
+                    element.setAttribute('href', '#');
+                }
                 form.appendChild(element);
             }
         });
