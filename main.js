@@ -170,7 +170,7 @@ function initMap(sbiNumber, firstName, lastName) {
                 form.appendChild(element);
             }
         });
-        
+        modalContent.innerHTML = '';
         modalContent.appendChild(form);
 
         modal.style.display = 'block';
