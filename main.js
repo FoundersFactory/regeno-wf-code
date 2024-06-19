@@ -401,7 +401,8 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
         let geojson;
 
         try {
-            geojson = await window.$memberstackDom.getMemberJSON();
+            memberstackData = await window.$memberstackDom.getMemberJSON();
+            geojson = memberstackData.data
         } catch (error) {
             console.error('Error fetching from Memberstack:', error);
         }
