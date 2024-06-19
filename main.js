@@ -1,4 +1,4 @@
-function initMap(sbiNumber, firstName, lastName) {
+function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
 
     //Load external scripts & stylesheets
     function loadScript(url) {
@@ -30,7 +30,7 @@ function initMap(sbiNumber, firstName, lastName) {
     }
 
     //Pushes a feature update back to the map
-    function updateFeatures(map, updatedFeature) {
+    async function updateFeatures(map, updatedFeature) {
         console.log("Update function: ", updatedFeature)
         const source = map.getSource('farm')._data;
 
@@ -44,6 +44,12 @@ function initMap(sbiNumber, firstName, lastName) {
             features: features
         });
 
+        try {
+            const geojson = map.getSource('farm')._data;
+            await window.$memberstackDom.updateMemberJSON({json: geojson})
+        } catch (error) {
+            console.error('Error sending to Memberstack:', error);
+        }
         updateTable(map)
     }
 
@@ -120,11 +126,11 @@ function initMap(sbiNumber, firstName, lastName) {
         const modal = document.getElementById('modal');
         const modalContent = document.getElementById('modal-content');
         const modalClose = document.getElementById('modal-close');
-        
+
         const form = document.createElement('form');
         form.id = 'modal-form';
         form.classList.add('modal-form');
-        
+
         const elements = [
             { tag: 'input', type: 'hidden', className: 'hidden-input', name: 'ID', value: feature.properties.ID },
             { tag: 'label', className: 'f-txt-field-label sm field-name', text: 'Field name:' },
@@ -149,7 +155,7 @@ function initMap(sbiNumber, firstName, lastName) {
             { tag: 'input', type: 'text', className: 'f-input-field sm w-input created-on', name: 'CREATED_ON', value: convertDate(feature.properties.CREATED_ON) },
             { tag: 'button', type: 'submit', className: 'modal-submit', text: 'Update' }
         ];
-        
+
         elements.forEach((el, index) => {
             const element = document.createElement(el.tag);
             if (el.text) element.textContent = el.text;
@@ -157,7 +163,7 @@ function initMap(sbiNumber, firstName, lastName) {
             if (el.className) element.className = el.className;
             if (el.name) element.name = el.name;
             if (el.value) element.value = el.value;
-        
+
             if (el.tag === 'label' && elements[index + 1] && elements[index + 1].tag === 'input') {
                 const div = document.createElement('div');
                 div.classList.add('f-steps-input');
@@ -204,209 +210,233 @@ function initMap(sbiNumber, firstName, lastName) {
         });
     }
 
-    //Main script thread starts
-    fetch(`https://eu-west-1.aws.data.mongodb-api.com/app/application-0-npilpbx/endpoint/landcover?SBI=${sbiNumber}&first=${firstName}&last=${lastName}`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            const geojson = data;
-            console.log(geojson);
+    //Main map management function
+    function mapbox(geojson){
+        console.log(geojson);
 
-            mapboxgl.accessToken = 'pk.eyJ1IjoicmVnZW5vLWZhcm0tdGVzdCIsImEiOiJjbHhhNmtyMnYxcDV6MmpzYzUyb3N4MWVzIn0.YYa6sVjYPHGAxpCxqPLdBg';
+        mapboxgl.accessToken = 'pk.eyJ1IjoicmVnZW5vLWZhcm0tdGVzdCIsImEiOiJjbHhhNmtyMnYxcDV6MmpzYzUyb3N4MWVzIn0.YYa6sVjYPHGAxpCxqPLdBg';
 
-            const bounds = turf.bbox(geojson);
-            const center = turf.centerOfMass(geojson);
+        const bounds = turf.bbox(geojson);
+        const center = turf.centerOfMass(geojson);
 
-            const map = new mapboxgl.Map({
-                container: 'map',
-                style: 'mapbox://styles/mapbox/light-v11',
-                projection: 'globe',
-                zoom: 13,
-                center: center.geometry.coordinates
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/light-v11',
+            projection: 'globe',
+            zoom: 13,
+            center: center.geometry.coordinates
+        });
+
+        map.fitBounds(bounds, {
+            padding: 20 // Adjust padding as needed
+        });
+
+        map.loadImage('https://uploads-ssl.webflow.com/660bcbc48b7009afef8be06d/6669cc4fa365d2efac2b2463_check-circle.png', (error, image) => {
+            if (error) throw error;
+            map.addImage('checkbox-image', image);
+        });
+
+        map.on('load', () => {
+
+            //Load data and update table
+            map.addSource('farm', {
+                type: 'geojson',
+                data: geojson
             });
+            updateTable(map)
 
-            map.fitBounds(bounds, {
-                padding: 20 // Adjust padding as needed
-            });
-
-            map.loadImage('https://uploads-ssl.webflow.com/660bcbc48b7009afef8be06d/6669cc4fa365d2efac2b2463_check-circle.png', (error, image) => {
-                if (error) throw error;
-                map.addImage('checkbox-image', image);
-            });
-
-            map.on('load', () => {
-
-                //Load data and update table
-                map.addSource('farm', {
-                    type: 'geojson',
-                    data: geojson
-                });
-                updateTable(map)
-
-                //Attach layers to map
-                map.addLayer({
-                    'id': 'farms',
-                    'type': 'fill',
-                    'source': 'farm',
-                    'layout': {},
-                    'paint': {
-                        'fill-color': [
-                            'case',
-                            ['has', 'CROP'], '#31A56C',
-                            ['match',
-                                ['get', 'DESCRIPTION'],
-                                'Arable Land', '#F7E16B',
-                                'Permanent Grassland', '#97E374',
-                                'Woodland', '#508936',
-                                'Scrub - Ungrazeable', '#E9E9E9',
-                                'Pond', "#5CC7E7",
-                                'Farmyards', '#DC772F',
-                                'Farm Building', '#DC772F',
-                                'Metalled track', '#B7B7B7',
-                                'Track - Natural Surface', '#CD9D55',
-                                'Residential dwelling, House', "#DC772F",
-                                '#4c9370'
-                            ]
-                        ],
-                        'fill-opacity': [
-                            'case',
-                            ['has', 'CROP'], 1.0,
-                            ['match',
-                                ['get', 'DESCRIPTION'],
-                                'Farm Building', 1.0,
-                                'Residential dwelling, House', 1.0,
-                                0.3
-                            ]
+            //Attach layers to map
+            map.addLayer({
+                'id': 'farms',
+                'type': 'fill',
+                'source': 'farm',
+                'layout': {},
+                'paint': {
+                    'fill-color': [
+                        'case',
+                        ['has', 'CROP'], '#31A56C',
+                        ['match',
+                            ['get', 'DESCRIPTION'],
+                            'Arable Land', '#F7E16B',
+                            'Permanent Grassland', '#97E374',
+                            'Woodland', '#508936',
+                            'Scrub - Ungrazeable', '#E9E9E9',
+                            'Pond', "#5CC7E7",
+                            'Farmyards', '#DC772F',
+                            'Farm Building', '#DC772F',
+                            'Metalled track', '#B7B7B7',
+                            'Track - Natural Surface', '#CD9D55',
+                            'Residential dwelling, House', "#DC772F",
+                            '#4c9370'
                         ]
-                    }
-                });
-                map.addLayer({
-                    'id': 'farm-outlines',
-                    'type': 'line',
-                    'source': 'farm',
-                    'layout': {},
-                    'paint': {
-                        'line-color': [
-                            'case',
-                            ['has', 'CROP'], '#BADDCB',
-                            ['match',
-                                ['get', 'DESCRIPTION'],
-                                'Arable Land', '#F7E16B',
-                                'Permanent Grassland', '#97E374',
-                                'Woodland', '#508936',
-                                'Scrub - Ungrazeable', '#E9E9E9',
-                                'Pond', "#5CC7E7",
-                                'Farmyards', '#DC772F',
-                                'Farm Building', '#DC772F',
-                                'Metalled track', '#B7B7B7',
-                                'Track - Natural Surface', '#CD9D55',
-                                'Residential dwelling, House', "#DC772F",
-                                '#4c9370'
-                            ]
-                        ],
-                        'line-width': 3
-                    }
+                    ],
+                    'fill-opacity': [
+                        'case',
+                        ['has', 'CROP'], 1.0,
+                        ['match',
+                            ['get', 'DESCRIPTION'],
+                            'Farm Building', 1.0,
+                            'Residential dwelling, House', 1.0,
+                            0.3
+                        ]
+                    ]
+                }
+            });
+            map.addLayer({
+                'id': 'farm-outlines',
+                'type': 'line',
+                'source': 'farm',
+                'layout': {},
+                'paint': {
+                    'line-color': [
+                        'case',
+                        ['has', 'CROP'], '#BADDCB',
+                        ['match',
+                            ['get', 'DESCRIPTION'],
+                            'Arable Land', '#F7E16B',
+                            'Permanent Grassland', '#97E374',
+                            'Woodland', '#508936',
+                            'Scrub - Ungrazeable', '#E9E9E9',
+                            'Pond', "#5CC7E7",
+                            'Farmyards', '#DC772F',
+                            'Farm Building', '#DC772F',
+                            'Metalled track', '#B7B7B7',
+                            'Track - Natural Surface', '#CD9D55',
+                            'Residential dwelling, House', "#DC772F",
+                            '#4c9370'
+                        ]
+                    ],
+                    'line-width': 3
+                }
+            });
+
+            map.addLayer({
+                'id': 'crop-checkbox',
+                'type': 'symbol',
+                'source': 'farm',
+                'layout': {
+                    'icon-image': 'checkbox-image',
+                    'icon-size': 0.05,
+                    'icon-allow-overlap': true,
+                    'icon-ignore-placement': true,
+                    'visibility': 'visible'
+                },
+                'filter': ['has', 'CROP']
+            });
+
+            //Attach basic popup to display land use on map
+            map.on('click', 'farms', (e) => {
+                new mapboxgl.Popup()
+                    .setLngLat(e.lngLat)
+                    .setHTML(e.features[0].properties.DESCRIPTION)
+                    .addTo(map);
+            });
+
+            map.on('mouseenter', 'farms', () => {
+                map.getCanvas().style.cursor = 'pointer';
+            });
+
+            map.on('mouseleave', 'farms', () => {
+                map.getCanvas().style.cursor = '';
+            });
+
+            //Attach drawing functions to map
+            const draw = new MapboxDraw({
+                displayControlsDefault: false,
+                controls: {
+                    point: true,
+                    line_string: true,
+                    polygon: true,
+                    trash: true
+                }
+            });
+            map.addControl(draw);
+
+            map.on('draw.create', updateArea);
+            map.on('draw.delete', updateArea);
+            map.on('draw.update', updateArea);
+
+            function updateArea(e) {
+                const data = draw.getAll();
+                const answer = document.getElementById('calculated-area');
+                if (data.features.length > 0) {
+                    const area = turf.area(data);
+                    const rounded_area = Math.round(area * 100) / 100;
+                } else {
+                    if (e.type !== 'draw.delete')
+                        alert('Click the map to draw a polygon.');
+                }
+            }
+
+            //Attach modal opening function to map
+            map.on('click', (e) => {
+                let features = map.queryRenderedFeatures(e.point, {
+                    layers: ['farms']
                 });
 
-                map.addLayer({
-                    'id': 'crop-checkbox',
-                    'type': 'symbol',
-                    'source': 'farm',
-                    'layout': {
-                        'icon-image': 'checkbox-image',
-                        'icon-size': 0.05,
-                        'icon-allow-overlap': true,
-                        'icon-ignore-placement': true,
-                        'visibility': 'visible'
-                    },
-                    'filter': ['has', 'CROP']
-                });
+                if (features.length === 0) {
+                    const clickPoint = {
+                        type: 'Feature',
+                        geometry: {
+                            type: 'Point',
+                            coordinates: [e.lngLat.lng, e.lngLat.lat]
+                        }
+                    };
 
-                //Attach basic popup to display land use on map
-                map.on('click', 'farms', (e) => {
-                    new mapboxgl.Popup()
-                        .setLngLat(e.lngLat)
-                        .setHTML(e.features[0].properties.DESCRIPTION)
-                        .addTo(map);
-                });
-
-                map.on('mouseenter', 'farms', () => {
-                    map.getCanvas().style.cursor = 'pointer';
-                });
-
-                map.on('mouseleave', 'farms', () => {
-                    map.getCanvas().style.cursor = '';
-                });
-
-                //Attach drawing functions to map
-                const draw = new MapboxDraw({
-                    displayControlsDefault: false,
-                    controls: {
-                        point: true,
-                        line_string: true,
-                        polygon: true,
-                        trash: true
-                    }
-                });
-                map.addControl(draw);
-
-                map.on('draw.create', updateArea);
-                map.on('draw.delete', updateArea);
-                map.on('draw.update', updateArea);
-
-                function updateArea(e) {
-                    const data = draw.getAll();
-                    const answer = document.getElementById('calculated-area');
-                    if (data.features.length > 0) {
-                        const area = turf.area(data);
-                        const rounded_area = Math.round(area * 100) / 100;
-                    } else {
-                        if (e.type !== 'draw.delete')
-                            alert('Click the map to draw a polygon.');
-                    }
+                    const drawFeatures = draw.getAll().features;
+                    drawFeatures.forEach(feature => {
+                        if (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon') {
+                            if (turf.booleanPointInPolygon(clickPoint, feature)) {
+                                features.push(feature);
+                            }
+                        }
+                    });
                 }
 
-                //Attach modal opening function to map
-                map.on('click', (e) => {
-                    let features = map.queryRenderedFeatures(e.point, {
-                        layers: ['farms']
-                    });
-
-                    if (features.length === 0) {
-                        const clickPoint = {
-                            type: 'Feature',
-                            geometry: {
-                                type: 'Point',
-                                coordinates: [e.lngLat.lng, e.lngLat.lat]
-                            }
-                        };
-
-                        const drawFeatures = draw.getAll().features;
-                        drawFeatures.forEach(feature => {
-                            if (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon') {
-                                if (turf.booleanPointInPolygon(clickPoint, feature)) {
-                                    features.push(feature);
-                                }
-                            }
-                        });
-                    }
-
-                    if (features.length > 0) {
-                        openModal(features[0], geojson, map);
-                    }
-                });
-
-                setInterval(function() {
-                    map.resize();
-                }, 1000);
+                if (features.length > 0) {
+                    openModal(features[0], geojson, map);
+                }
             });
-        })
-        .catch(error => {
-            //Generic catch for main thread
-            console.error('There was a problem with the fetch operation:', error);
+
+            setInterval(function() {
+                map.resize();
+            }, 1000);
         });
-};
+    }
+
+
+    //Main script thread starts
+    async function getGeoJSON(sbiNumber, firstName, lastName) {
+        let geojson;
+
+        try {
+            geojson = await window.$memberstackDom.getMemberJSON();
+        } catch (error) {
+            console.error('Error fetching from Memberstack:', error);
+        }
+
+        if (!geojson) {
+            try {
+                const response = await fetch(`https://eu-west-1.aws.data.mongodb-api.com/app/application-0-npilpbx/endpoint/landcover?SBI=${sbiNumber}&first=${firstName}&last=${lastName}`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                geojson = await response.json();
+                try {
+                    await window.$memberstackDom.updateMemberJSON({json: geojson})
+                } catch (error) {
+                    console.error('Error sending to Memberstack:', error);
+                }
+            } catch (error) {
+                alert("No data found for this SBI number. Please try again.")
+                console.error('There was a problem with the fetch operation:', error);
+            }
+        }
+
+        if (geojson) {
+            mapbox(geojson);
+        }
+    }
+
+    getGeoJSON(sbiNumber, firstName, lastName)
+}
