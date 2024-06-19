@@ -73,19 +73,19 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
             const form = document.createElement('form');
             form.classList.add('table-form');
             form.innerHTML = `
-            <input type="hidden" name="ID" class="hidden-input" value="${obj.properties.ID}">
-            <input type="text" name="CROP" class="table-cell-wrapper crop" value="${obj.properties.CROP ?? ""}">
-            <input type="text" name="FIELD_NAME" class="table-cell-wrapper field_name" value="${obj.properties.FIELD_NAME ?? ""}">
-            <input type="text" name="SHEET_ID" class="table-cell-wrapper sheet-id" value="${obj.properties.SHEET_ID}">
-            <input type="text" name="PARCEL_ID" class="table-cell-wrapper parcel-id" value="${obj.properties.PARCEL_ID}">
-            <input type="text" name="DESCRIPTION" class="table-cell-wrapper description" value="${obj.properties.DESCRIPTION}">
-            <input type="text" name="AREA_HA" class="table-cell-wrapper area-ha" value="${obj.properties.AREA_HA}">
-            <input type="text" name="LAND_COVER_CLASS_CODE" class="table-cell-wrapper land-cover-class-code" value="${obj.properties.LAND_COVER_CLASS_CODE}">
-            <input type="text" name="SHAPE_AREA" class="table-cell-wrapper shape-area" value="${obj.properties.SHAPE_AREA}">
-            <input type="text" name="SHAPE_PERIMETER" class="table-cell-wrapper shape-perimeter" value="${obj.properties.SHAPE_PERIMETER}">
-            <input type="text" name="CREATED_ON" class="table-cell-wrapper created-on" value="${convertDate(obj.properties.CREATED_ON)}">
-            <button type="submit" class="table-submit">Submit</button>
-        `;
+                <input type="hidden" name="ID" class="hidden-input" value="${obj.properties.ID}">
+                <input type="text" name="CROP" class="table-cell-wrapper crop" value="${obj.properties.CROP ?? ""}">
+                <input type="text" name="FIELD_NAME" class="table-cell-wrapper field_name" value="${obj.properties.FIELD_NAME ?? ""}">
+                <input type="text" name="SHEET_ID" class="table-cell-wrapper sheet-id" value="${obj.properties.SHEET_ID}">
+                <input type="text" name="PARCEL_ID" class="table-cell-wrapper parcel-id" value="${obj.properties.PARCEL_ID}">
+                <input type="text" name="DESCRIPTION" class="table-cell-wrapper description" value="${obj.properties.DESCRIPTION}">
+                <input type="text" name="AREA_HA" class="table-cell-wrapper area-ha" value="${obj.properties.AREA_HA}">
+                <input type="text" name="LAND_COVER_CLASS_CODE" class="table-cell-wrapper land-cover-class-code" value="${obj.properties.LAND_COVER_CLASS_CODE}">
+                <input type="text" name="SHAPE_AREA" class="table-cell-wrapper shape-area" value="${obj.properties.SHAPE_AREA}">
+                <input type="text" name="SHAPE_PERIMETER" class="table-cell-wrapper shape-perimeter" value="${obj.properties.SHAPE_PERIMETER}">
+                <input type="text" name="CREATED_ON" class="table-cell-wrapper created-on" value="${convertDate(obj.properties.CREATED_ON)}">
+                <button type="submit" class="table-submit">Submit</button>
+            `;
 
             form.addEventListener('submit', function (event) {
                 event.preventDefault();
@@ -131,50 +131,50 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
         form.id = 'modal-form';
         form.classList.add('modal-form');
 
-        modalContent.innerHTML = `
-        <form id="modal-form" class="modal-form">
+        form.innerHTML = `
             <input type="hidden" class="hidden-input" name="ID" value="${feature.properties.ID ?? ""}">
             <div class="f-steps-input sm">
                 <label class="f-txt-field-label sm field-name">Field name:</label>
-                <input type="text" class="f-input-field sm w-input field-name" name="FIELD_NAME" value="${feature.properties.FIELD_NAME ?? ""}">
+                <input type="text" class="f-input-field sm field-name" name="FIELD_NAME" value="${feature.properties.FIELD_NAME ?? ""}">
             </div><div class="f-steps-input sm">
                 <label class="f-txt-field-label sm crop">Crop:</label>
-                <input type="text" class="f-input-field sm w-input crop" name="CROP" value="${feature.properties.CROP ?? ""}">
+                <input type="text" class="f-input-field sm crop" name="CROP" value="${feature.properties.CROP ?? ""}">
             </div><div class="f-steps-input sm">
                 <label class="f-txt-field-label sm sheet-id">Sheet ID:</label>
-                <input type="text" class="f-input-field sm w-input sheet-id" name="SHEET_ID" value="${feature.properties.SHEET_ID ?? ""}">
+                <input type="text" class="f-input-field sm sheet-id" name="SHEET_ID" value="${feature.properties.SHEET_ID ?? ""}">
             </div>
             <div class="f-steps-input sm">
                 <label class="f-txt-field-label sm parcel-id">Parcel ID:</label>
-                <input type="text" class="f-input-field sm w-input parcel-id" name="PARCEL_ID" value="${feature.properties.PARCEL_ID ?? ""}">
+                <input type="text" class="f-input-field sm parcel-id" name="PARCEL_ID" value="${feature.properties.PARCEL_ID ?? ""}">
             </div>
             <div class="f-steps-input sm">
                 <label class="f-txt-field-label sm description">Current land use:</label>
-                <input type="text" class="f-input-field sm w-input description" name="DESCRIPTION" value="${feature.properties.DESCRIPTION ?? ""}">
+                <input type="text" class="f-input-field sm description" name="DESCRIPTION" value="${feature.properties.DESCRIPTION ?? ""}">
             </div>
             <div class="f-steps-input sm">
                 <label class="f-txt-field-label sm area-ha">Hectares:</label>
-                <input type="text" class="f-input-field sm w-input area-ha" name="AREA_HA" value="${feature.properties.AREA_HA ?? ""}">
+                <input type="text" class="f-input-field sm area-ha" name="AREA_HA" value="${feature.properties.AREA_HA ?? ""}">
             </div>
             <div class="f-steps-input sm">
                 <label class="f-txt-field-label sm land-cover-class-code">Land cover class code:</label>
-                <input type="text" class="f-input-field sm w-input land-cover-class-code" name="LAND_COVER_CLASS_CODE" value="${feature.properties.LAND_COVER_CLASS_CODE ?? ""}">
+                <input type="text" class="f-input-field sm land-cover-class-code" name="LAND_COVER_CLASS_CODE" value="${feature.properties.LAND_COVER_CLASS_CODE ?? ""}">
             </div>
             <div class="f-steps-input sm">
                 <label class="f-txt-field-label sm shape-area">Shape area:</label>
-                <input type="text" class="f-input-field sm w-input shape-area" name="SHAPE_AREA" value="${feature.properties.SHAPE_AREA ?? ""}">
+                <input type="text" class="f-input-field sm shape-area" name="SHAPE_AREA" value="${feature.properties.SHAPE_AREA ?? ""}">
             </div>
             <div class="f-steps-input sm">
                 <label class="f-txt-field-label sm shape-perimeter">Shape perimeter:</label>
-                <input type="text" class="f-input-field sm w-input shape-perimeter" name="SHAPE_PERIMETER" value="${feature.properties.SHAPE_PERIMETER ?? ""}">
+                <input type="text" class="f-input-field sm shape-perimeter" name="SHAPE_PERIMETER" value="${feature.properties.SHAPE_PERIMETER ?? ""}">
             </div>
             <div class="f-steps-input sm">
                 <label class="f-txt-field-label sm created-on">Created on:</label>
-                <input type="text" class="f-input-field sm w-input created-on" name="CREATED_ON" value="${convertDate(feature.properties.CREATED_ON ?? "")}">
+                <input type="text" class="f-input-field sm created-on" name="CREATED_ON" value="${convertDate(feature.properties.CREATED_ON ?? "")}">
             </div>
             <button type="submit" class="modal-submit" href="#">Update</button>
-        </form>
         `;
+
+        modalContent.appendChild(form)
 
         modal.style.display = 'block';
         modal.style.opacity = 0;
