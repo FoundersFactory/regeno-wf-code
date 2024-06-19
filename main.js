@@ -104,7 +104,7 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
         formData.forEach((value, key) => {
             data[key] = value;
         });
-
+        console.log("Form submitted: ", data)
         const originalFeature = map.queryRenderedFeatures({
             layers: ['farms'],
             filter: ['==', ['get', 'ID'], data.ID]
@@ -131,59 +131,50 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
         form.id = 'modal-form';
         form.classList.add('modal-form');
 
-        const elements = [
-            { tag: 'input', type: 'hidden', className: 'hidden-input', name: 'ID', value: feature.properties.ID },
-            { tag: 'label', className: 'f-txt-field-label sm field-name', text: 'Field name:' },
-            { tag: 'input', type: 'text', className: 'f-input-field sm w-input field-name', name: 'FIELD_NAME', value: feature.properties.FIELD_NAME ?? "" },
-            { tag: 'label', className: 'f-txt-field-label sm crop', text: 'Crop:' },
-            { tag: 'input', type: 'text', className: 'f-input-field sm w-input crop', name: 'CROP', value: feature.properties.CROP ?? "" },
-            { tag: 'label', className: 'f-txt-field-label sm sheet-id', text: 'Sheet ID:' },
-            { tag: 'input', type: 'text', className: 'f-input-field sm w-input sheet-id', name: 'SHEET_ID', value: feature.properties.SHEET_ID },
-            { tag: 'label', className: 'f-txt-field-label sm parcel-id', text: 'Parcel ID:' },
-            { tag: 'input', type: 'text', className: 'f-input-field sm w-input parcel-id', name: 'PARCEL_ID', value: feature.properties.PARCEL_ID },
-            { tag: 'label', className: 'f-txt-field-label sm description', text: 'Current land use:' },
-            { tag: 'input', type: 'text', className: 'f-input-field sm w-input description', name: 'DESCRIPTION', value: feature.properties.DESCRIPTION },
-            { tag: 'label', className: 'f-txt-field-label sm area-ha', text: 'Hectares:' },
-            { tag: 'input', type: 'text', className: 'f-input-field sm w-input area-ha', name: 'AREA_HA', value: feature.properties.AREA_HA },
-            { tag: 'label', className: 'f-txt-field-label sm land-cover-class-code', text: 'Land cover class code:' },
-            { tag: 'input', type: 'text', className: 'f-input-field sm w-input land-cover-class-code', name: 'LAND_COVER_CLASS_CODE', value: feature.properties.LAND_COVER_CLASS_CODE },
-            { tag: 'label', className: 'f-txt-field-label sm shape-area', text: 'Shape area:' },
-            { tag: 'input', type: 'text', className: 'f-input-field sm w-input shape-area', name: 'SHAPE_AREA', value: feature.properties.SHAPE_AREA },
-            { tag: 'label', className: 'f-txt-field-label sm shape-perimeter', text: 'Shape perimeter:' },
-            { tag: 'input', type: 'text', className: 'f-input-field sm w-input shape-perimeter', name: 'SHAPE_PERIMETER', value: feature.properties.SHAPE_PERIMETER },
-            { tag: 'label', className: 'f-txt-field-label sm created-on', text: 'Created on:' },
-            { tag: 'input', type: 'text', className: 'f-input-field sm w-input created-on', name: 'CREATED_ON', value: convertDate(feature.properties.CREATED_ON) },
-            { tag: 'button', type: 'submit', className: 'modal-submit', text: 'Update' }
-        ];
-
-        elements.forEach((el, index) => {
-            const element = document.createElement(el.tag);
-            if (el.text) element.textContent = el.text;
-            if (el.type) element.type = el.type;
-            if (el.className) element.className = el.className;
-            if (el.name) element.name = el.name;
-            if (el.value) element.value = el.value;
-
-            if (el.tag === 'label' && elements[index + 1] && elements[index + 1].tag === 'input') {
-                const div = document.createElement('div');
-                div.classList.add('f-steps-input');
-                div.classList.add('sm');
-                div.appendChild(element);
-                div.appendChild(document.createElement(elements[index + 1].tag));
-                if (elements[index + 1].type) div.lastChild.type = elements[index + 1].type;
-                if (elements[index + 1].className) div.lastChild.className = elements[index + 1].className;
-                if (elements[index + 1].name) div.lastChild.name = elements[index + 1].name;
-                if (elements[index + 1].value) div.lastChild.value = elements[index + 1].value;
-                form.appendChild(div);
-            } else if (el.tag !== 'input') {
-                if (el.tag === 'button') {
-                    element.setAttribute('href', '#');
-                }
-                form.appendChild(element);
-            }
-        });
-        modalContent.innerHTML = '';
-        modalContent.appendChild(form);
+        modalContent.innerHTML = `
+        <form id="modal-form" class="modal-form">
+            <input type="hidden" class="hidden-input" name="ID" value="${feature.properties.ID ?? ""}">
+            <div class="f-steps-input sm">
+                <label class="f-txt-field-label sm field-name">Field name:</label>
+                <input type="text" class="f-input-field sm w-input field-name" name="FIELD_NAME" value="${feature.properties.FIELD_NAME ?? ""}">
+            </div><div class="f-steps-input sm">
+                <label class="f-txt-field-label sm crop">Crop:</label>
+                <input type="text" class="f-input-field sm w-input crop" name="CROP" value="${feature.properties.CROP ?? ""}">
+            </div><div class="f-steps-input sm">
+                <label class="f-txt-field-label sm sheet-id">Sheet ID:</label>
+                <input type="text" class="f-input-field sm w-input sheet-id" name="SHEET_ID" value="${feature.properties.SHEET_ID ?? ""}">
+            </div>
+            <div class="f-steps-input sm">
+                <label class="f-txt-field-label sm parcel-id">Parcel ID:</label>
+                <input type="text" class="f-input-field sm w-input parcel-id" name="PARCEL_ID" value="${feature.properties.PARCEL_ID ?? ""}">
+            </div>
+            <div class="f-steps-input sm">
+                <label class="f-txt-field-label sm description">Current land use:</label>
+                <input type="text" class="f-input-field sm w-input description" name="DESCRIPTION" value="${feature.properties.DESCRIPTION ?? ""}">
+            </div>
+            <div class="f-steps-input sm">
+                <label class="f-txt-field-label sm area-ha">Hectares:</label>
+                <input type="text" class="f-input-field sm w-input area-ha" name="AREA_HA" value="${feature.properties.AREA_HA ?? ""}">
+            </div>
+            <div class="f-steps-input sm">
+                <label class="f-txt-field-label sm land-cover-class-code">Land cover class code:</label>
+                <input type="text" class="f-input-field sm w-input land-cover-class-code" name="LAND_COVER_CLASS_CODE" value="${feature.properties.LAND_COVER_CLASS_CODE ?? ""}">
+            </div>
+            <div class="f-steps-input sm">
+                <label class="f-txt-field-label sm shape-area">Shape area:</label>
+                <input type="text" class="f-input-field sm w-input shape-area" name="SHAPE_AREA" value="${feature.properties.SHAPE_AREA ?? ""}">
+            </div>
+            <div class="f-steps-input sm">
+                <label class="f-txt-field-label sm shape-perimeter">Shape perimeter:</label>
+                <input type="text" class="f-input-field sm w-input shape-perimeter" name="SHAPE_PERIMETER" value="${feature.properties.SHAPE_PERIMETER ?? ""}">
+            </div>
+            <div class="f-steps-input sm">
+                <label class="f-txt-field-label sm created-on">Created on:</label>
+                <input type="text" class="f-input-field sm w-input created-on" name="CREATED_ON" value="${convertDate(feature.properties.CREATED_ON ?? "")}">
+            </div>
+            <button type="submit" class="modal-submit" href="#">Update</button>
+        </form>
+        `;
 
         modal.style.display = 'block';
         modal.style.opacity = 0;
