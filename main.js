@@ -45,8 +45,7 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
         });
 
         try {
-            const geojson = map.getSource('farm')._data;
-            await window.$memberstackDom.updateMemberJSON({json: geojson})
+            saveGeojson()
         } catch (error) {
             console.error('Error sending to Memberstack:', error);
         }
@@ -173,7 +172,7 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
             </div>
             <button type="submit" class="modal-submit" href="#">Update</button>
         `;
-        
+
         modalContent.innerHTML = '';
         modalContent.appendChild(form)
 
@@ -203,7 +202,7 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
     }
 
     //Main map management function
-    function mapbox(geojson){
+    function mapbox(geojson, drawings = undefined){
         console.log(geojson);
 
         mapboxgl.accessToken = 'pk.eyJ1IjoicmVnZW5vLWZhcm0tdGVzdCIsImEiOiJjbHhhNmtyMnYxcDV6MmpzYzUyb3N4MWVzIn0.YYa6sVjYPHGAxpCxqPLdBg';
@@ -344,6 +343,13 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
             });
             map.addControl(draw);
 
+            if (drawings) {
+                console.log(drawings)
+                drawings.features.forEach(drawing => {
+                    draw.add(drawing);
+                })
+            }
+
             map.on('draw.create', updateArea);
             map.on('draw.delete', updateArea);
             map.on('draw.update', updateArea);
@@ -383,8 +389,18 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
                                 features.push(feature);
                             }
                         }
+                        else if (feature.geometry.type === 'LineString') {
+                            if (turf.booleanPointOnLine(clickPoint, feature)) {
+                                features.push(feature);
+                            }
+                        }
+                        else {
+                            console.log(feature.geometry.type)
+                        }
                     });
                 }
+
+                console.log("Clicked feature: ", features)
 
                 if (features.length > 0) {
                     openModal(features[0], geojson, map);
@@ -394,9 +410,31 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
             setInterval(function() {
                 map.resize();
             }, 1000);
+
+            //Update memberstack with merged drawings and map data
+            window.saveGeojson = async function() {
+                let coreFeatures = map.getSource('farm')._data;
+                coreFeatures.features.forEach(feature => {
+                    feature.properties.collection = 'map';
+                });
+
+                let drawFeatures = draw.getAll();
+                drawFeatures.features.forEach(feature => {
+                    feature.properties.collection = 'drawings';
+                });
+
+                if (coreFeatures.features.length !== 0 && drawFeatures.features.length !== 0) {
+                    coreFeatures.features.push(...drawFeatures.features);
+                }
+
+                try {
+                    await window.$memberstackDom.updateMemberJSON({json: geojson})
+                } catch (error) {
+                    console.error('Error sending to Memberstack:', error);
+                }
+            }
         });
     }
-
 
     //Main script thread starts
     async function getGeoJSON(sbiNumber, firstName, lastName) {
@@ -428,7 +466,148 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
         }
 
         if (geojson) {
-            mapbox(geojson);
+
+            //Split out incoming drawings and map data
+            const mapData = geojson.features.filter(feature => feature.properties.collection !== 'drawings');
+            //const drawings = geojson.features.filter(feature => feature.properties.collection === 'drawings');
+            const drawings = [
+                {
+                    "id": "91fe1e7dcee6a4d9cfc7eeece11e16c2",
+                    "type": "Feature",
+                    "properties": {},
+                    "geometry": {
+                        "coordinates": [
+                            [
+                                0.0399980644062623,
+                                52.704281171572944
+                            ],
+                            [
+                                0.04541260476716502,
+                                52.696123909334915
+                            ],
+                            [
+                                0.05526406014752183,
+                                52.70546589850704
+                            ]
+                        ],
+                        "type": "LineString"
+                    }
+                },
+                {
+                    "id": "2ff14718e0665a7282395d0e20cc7ea9",
+                    "type": "Feature",
+                    "properties": {"collection": "drawings"},
+                    "geometry": {
+                        "coordinates": [
+                            [
+                                [
+                                    0.048119874948355346,
+                                    52.6935260253521
+                                ],
+                                [
+                                    0.049623913937267616,
+                                    52.69124705246875
+                                ],
+                                [
+                                    0.056542493288532114,
+                                    52.69320697630994
+                                ],
+                                [
+                                    0.05347073270991132,
+                                    52.695598453670385
+                                ],
+                                [
+                                    0.048119874948355346,
+                                    52.6935260253521
+                                ]
+                            ]
+                        ],
+                        "type": "Polygon"
+                    }
+                },
+                {
+                    "id": "d4edb243d3b4e15ba024db78dd723b5d",
+                    "type": "Feature",
+                    "properties": {"collection": "drawings"},
+                    "geometry": {
+                        "coordinates": [
+                            [
+                                [
+                                    0.05837477278075198,
+                                    52.6970230088325
+                                ],
+                                [
+                                    0.05895690870102044,
+                                    52.69399897544713
+                                ],
+                                [
+                                    0.06768894751203902,
+                                    52.694704601973854
+                                ],
+                                [
+                                    0.06294869787191715,
+                                    52.698837334317005
+                                ],
+                                [
+                                    0.05837477278075198,
+                                    52.6970230088325
+                                ]
+                            ]
+                        ],
+                        "type": "Polygon"
+                    }
+                },
+                {
+                    "id": "b7ecad6d287c332b866cb2f4f3e083d3",
+                    "type": "Feature",
+                    "properties": {"collection": "drawings"},
+                    "geometry": {
+                        "coordinates": [
+                            [
+                                0.0399959101398224,
+                                52.69546061773917
+                            ],
+                            [
+                                0.04265710292042968,
+                                52.69072270288464
+                            ],
+                            [
+                                0.05737682548738121,
+                                52.689512940097785
+                            ]
+                        ],
+                        "type": "LineString"
+                    }
+                },
+                {
+                    "id": "3efd6d830084485d5972d68f1f177bef",
+                    "type": "Feature",
+                    "properties": {"collection": "drawings"},
+                    "geometry": {
+                        "coordinates": [
+                            0.04590490547533932,
+                            52.69490785059247
+                        ],
+                        "type": "Point"
+                    }
+                }
+            ]
+
+            const mapGeojson = {
+                ...geojson,
+                features: mapData
+            };
+            if (drawings.length > 0) {
+                const drawingGeojson = {
+                    ...geojson,
+                    features: drawings
+                };
+
+                mapbox(mapGeojson, drawingGeojson);
+            }
+            else {
+                mapbox(mapGeojson);
+            }
         }
     }
 
