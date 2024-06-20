@@ -133,29 +133,29 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
 
         form.innerHTML = `
             <input type="hidden" class="hidden-input" name="ID" value="${feature.properties.ID ?? ""}">
-            <div class="f-steps-input sm">
+            <div class="f-steps-input sm field-name">
                 <label class="f-txt-field-label sm field-name">Field name:</label>
                 <input type="text" class="f-input-field sm field-name" name="FIELD_NAME" value="${feature.properties.FIELD_NAME ?? ""}">
-            </div><div class="f-steps-input sm">
+            </div><div class="f-steps-input sm crop">
                 <label class="f-txt-field-label sm crop">Crop:</label>
                 <input type="text" class="f-input-field sm crop" name="CROP" value="${feature.properties.CROP ?? ""}">
-            </div><div class="f-steps-input sm">
+            </div><div class="f-steps-input sm sheet-id">
                 <label class="f-txt-field-label sm sheet-id">Sheet ID:</label>
                 <input type="text" class="f-input-field sm sheet-id" name="SHEET_ID" value="${feature.properties.SHEET_ID ?? ""}">
             </div>
-            <div class="f-steps-input sm">
+            <div class="f-steps-input sm parcel-id">
                 <label class="f-txt-field-label sm parcel-id">Parcel ID:</label>
                 <input type="text" class="f-input-field sm parcel-id" name="PARCEL_ID" value="${feature.properties.PARCEL_ID ?? ""}">
             </div>
-            <div class="f-steps-input sm">
+            <div class="f-steps-input sm description">
                 <label class="f-txt-field-label sm description">Current land use:</label>
                 <input type="text" class="f-input-field sm description" name="DESCRIPTION" value="${feature.properties.DESCRIPTION ?? ""}">
             </div>
-            <div class="f-steps-input sm">
+            <div class="f-steps-input sm area-ha">
                 <label class="f-txt-field-label sm area-ha">Hectares:</label>
                 <input type="text" class="f-input-field sm area-ha" name="AREA_HA" value="${feature.properties.AREA_HA ?? ""}">
             </div>
-            <div class="f-steps-input sm">
+            <div class="f-steps-input sm land-cover-class-code">
                 <label class="f-txt-field-label sm land-cover-class-code">Land cover class code:</label>
                 <input type="text" class="f-input-field sm land-cover-class-code" name="LAND_COVER_CLASS_CODE" value="${feature.properties.LAND_COVER_CLASS_CODE ?? ""}">
             </div>
@@ -167,7 +167,7 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
                 <label class="f-txt-field-label sm shape-perimeter">Shape perimeter:</label>
                 <input type="text" class="f-input-field sm shape-perimeter" name="SHAPE_PERIMETER" value="${feature.properties.SHAPE_PERIMETER ?? ""}">
             </div>
-            <div class="f-steps-input sm">
+            <div class="f-steps-input sm created-on">
                 <label class="f-txt-field-label sm created-on">Created on:</label>
                 <input type="text" class="f-input-field sm created-on" name="CREATED_ON" value="${convertDate(feature.properties.CREATED_ON ?? "")}">
             </div>
