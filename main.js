@@ -431,7 +431,7 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
                 }
 
                 try {
-                    await window.$memberstackDom.updateMemberJSON({json: geojson})
+                    await window.$memberstackDom.updateMemberJSON({json: coreFeatures})
                 } catch (error) {
                     console.error('Error sending to Memberstack:', error);
                 }
