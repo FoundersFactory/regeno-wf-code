@@ -173,7 +173,8 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
             </div>
             <button type="submit" class="modal-submit" href="#">Update</button>
         `;
-
+        
+        modalContent.innerHTML = '';
         modalContent.appendChild(form)
 
         modal.style.display = 'block';
