@@ -159,11 +159,11 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
                 <label class="f-txt-field-label sm land-cover-class-code">Land cover class code:</label>
                 <input type="text" class="f-input-field sm land-cover-class-code" name="LAND_COVER_CLASS_CODE" value="${feature.properties.LAND_COVER_CLASS_CODE ?? ""}">
             </div>
-            <div class="f-steps-input sm">
+            <div class="f-steps-input sm shape-area">
                 <label class="f-txt-field-label sm shape-area">Shape area:</label>
                 <input type="text" class="f-input-field sm shape-area" name="SHAPE_AREA" value="${feature.properties.SHAPE_AREA ?? ""}">
             </div>
-            <div class="f-steps-input sm">
+            <div class="f-steps-input sm shape-perimeter">
                 <label class="f-txt-field-label sm shape-perimeter">Shape perimeter:</label>
                 <input type="text" class="f-input-field sm shape-perimeter" name="SHAPE_PERIMETER" value="${feature.properties.SHAPE_PERIMETER ?? ""}">
             </div>
