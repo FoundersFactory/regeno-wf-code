@@ -350,6 +350,7 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
 
             function updateArea(e) {
                 const data = draw.getAll();
+                console.log("Drawing data: ", data)
                 const answer = document.getElementById('calculated-area');
                 if (data.features.length > 0) {
                     const area = turf.area(data);
