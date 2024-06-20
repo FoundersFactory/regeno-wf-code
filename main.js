@@ -23,7 +23,7 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
 
     //Utility - Converts map date string to something readable
     function convertDate(dateString) {
-        if (dateString !== "") {
+        if (dateString !== "" && dateString !== undefined) {
             const year = dateString.substring(0, 4);
             const month = dateString.substring(4, 6);
             const day = dateString.substring(6, 8);
