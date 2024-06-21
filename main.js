@@ -372,7 +372,12 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
 
             //Attach modal opening function to map
             map.on('click', (e) => {
-                let features = map.queryRenderedFeatures(e.point, {
+                const bbox = [
+                    [e.point.x - 5, e.point.y - 5],
+                    [e.point.x + 5, e.point.y + 5]
+                ];
+
+                let features = map.queryRenderedFeatures(bbox, {
                     layers: ['farms']
                 });
 
@@ -386,6 +391,8 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
                     };
 
                     const drawFeatures = draw.getAll().features;
+                    const tolerance = 0.02 //kilometres tolerance
+
                     drawFeatures.forEach(feature => {
                         if (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon') {
                             if (turf.booleanPointInPolygon(clickPoint, feature)) {
@@ -393,7 +400,12 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
                             }
                         }
                         else if (feature.geometry.type === 'LineString') {
-                            if (turf.booleanPointOnLine(clickPoint, feature)) {
+                            if (turf.nearestPointOnLine(feature, clickPoint).properties.dist <= tolerance) {
+                                features.push(feature);
+                            }
+                        }
+                        else if (feature.geometry.type === 'Point') {
+                            if (turf.distance(clickPoint, feature) <= tolerance) {
                                 features.push(feature);
                             }
                         }
