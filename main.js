@@ -1,5 +1,7 @@
 function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
 
+    let draw
+
     //Load external scripts & stylesheets
     function loadScript(url) {
         const script = document.createElement('script');
@@ -33,19 +35,28 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
     }
 
     //Pushes a feature update back to the map
-    async function updateFeatures(map, updatedFeature) {
+    async function updateFeatures(map, updatedFeature, isDrawing) {
+        console.log("Drawing: ", isDrawing)
         console.log("Update function: ", updatedFeature)
-        const source = map.getSource('farm')._data;
+        const source = isDrawing ? draw.getAll() : map.getSource('farm')._data
 
-        const features = source.features.map(f => f.properties.ID === updatedFeature.properties.ID ? {
+        const features = source.features.map(f => ((f.properties.ID === updatedFeature.properties.ID && f.properties.ID !== undefined) || (f.id === updatedFeature.id && f.id !== undefined)) ? {
             ...f,
             properties: updatedFeature.properties
         } : f);
 
-        map.getSource('farm').setData({
-            ...source,
-            features: features
-        });
+        if (isDrawing) {
+            draw.deleteAll()
+            features.forEach(drawing => {
+                draw.add(drawing);
+            })
+        }
+        else {
+            map.getSource('farm').setData({
+                ...source,
+                features: features
+            });
+        }
 
         try {
             saveGeojson()
@@ -75,7 +86,7 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
             const form = document.createElement('form');
             form.classList.add('table-form');
             form.innerHTML = `
-                <input type="hidden" name="ID" class="hidden-input" value="${obj.properties.ID}">
+                <input type="hidden" name="ID" class="hidden-input" value="${obj.properties.ID ?? obj.id}">
                 <input type="text" name="CROP" class="table-cell-wrapper crop" value="${obj.properties.CROP ?? ""}">
                 <input type="text" name="FIELD_NAME" class="table-cell-wrapper field_name" value="${obj.properties.FIELD_NAME ?? ""}">
                 <input type="text" name="SHEET_ID" class="table-cell-wrapper sheet-id" value="${obj.properties.SHEET_ID}">
@@ -102,16 +113,31 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
     //Matches a form submission to a map feature and pushes a feature update
 
     function handleSubmit(map, formData) {
+        let isDrawing = false
+
         const data = {};
         formData.forEach((value, key) => {
             data[key] = value;
         });
         console.log("Form submitted: ", data)
-        const originalFeature = map.queryRenderedFeatures({
+        let originalFeature
+
+        originalFeature = map.queryRenderedFeatures({
             layers: ['farms'],
             filter: ['==', ['get', 'ID'], data.ID]
         })[0];
-        console.log(originalFeature)
+
+        if (!originalFeature) {
+            console.log("Drawn features full: ", draw.getAll().features)
+            originalFeature = draw.getAll().features.find(feature => {
+                if (feature.id === data.ID) {
+                    isDrawing = true
+                    return feature
+                }
+            });
+        }
+
+        console.log("Feature to update: ", originalFeature)
 
         const updatedFeature = {
             ...originalFeature,
@@ -120,7 +146,9 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
                 ...data
             }
         };
-        updateFeatures(map, updatedFeature)
+
+        console.log("Updated feature: ", originalFeature)
+        updateFeatures(map, updatedFeature, isDrawing)
     }
 
     //Opens a modal to edit a map feature
@@ -134,7 +162,7 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
         form.classList.add('modal-form');
 
         form.innerHTML = `
-            <input type="hidden" class="hidden-input" name="ID" value="${feature.properties.ID ?? ""}">
+            <input type="hidden" class="hidden-input" name="ID" value="${feature.properties.ID ?? feature.id ?? ""}">
             <div class="f-steps-input sm field-name">
                 <label class="f-txt-field-label sm field-name">Field name:</label>
                 <input type="text" class="f-input-field sm field-name" name="FIELD_NAME" value="${feature.properties.FIELD_NAME ?? ""}">
@@ -206,8 +234,6 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
 
     //Main map management function
     function mapbox(geojson, drawings = undefined){
-        console.log(geojson);
-
         mapboxgl.accessToken = 'pk.eyJ1IjoicmVnZW5vLWZhcm0tdGVzdCIsImEiOiJjbHhhNmtyMnYxcDV6MmpzYzUyb3N4MWVzIn0.YYa6sVjYPHGAxpCxqPLdBg';
 
         const bounds = turf.bbox(geojson);
@@ -335,7 +361,7 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
             });
 
             //Attach drawing functions to map
-            const draw = new MapboxDraw({
+            draw = new MapboxDraw({
                 displayControlsDefault: false,
                 controls: {
                     point: true,
@@ -347,7 +373,6 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
             map.addControl(draw);
 
             if (drawings) {
-                console.log(drawings)
                 drawings.features.forEach(drawing => {
                     draw.add(drawing);
                 })
@@ -359,7 +384,6 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
 
             function updateArea(e) {
                 const data = draw.getAll();
-                console.log("Drawing data: ", data)
                 const answer = document.getElementById('calculated-area');
                 if (data.features.length > 0) {
                     const area = turf.area(data);
@@ -381,7 +405,10 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
                     layers: ['farms']
                 });
 
-                if (features.length === 0) {
+                if (features.length > 0) {
+                    openModal(features[0], geojson, map);
+                }
+                else {
                     const clickPoint = {
                         type: 'Feature',
                         geometry: {
@@ -413,12 +440,10 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
                             console.log(feature.geometry.type)
                         }
                     });
-                }
 
-                console.log("Clicked feature: ", features)
-
-                if (features.length > 0) {
-                    openModal(features[0], geojson, map);
+                    if (features.length > 0) {
+                        openModal(features[0], drawFeatures, map);
+                    }
                 }
             });
 
