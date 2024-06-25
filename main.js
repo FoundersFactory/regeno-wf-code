@@ -1,4 +1,4 @@
-function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
+function initMap(sbiNumber, firstName, lastName, email, geojson = undefined ) {
 
     let draw
 
@@ -348,7 +348,7 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
             map.on('click', 'farms', (e) => {
                 new mapboxgl.Popup()
                     .setLngLat(e.lngLat)
-                    .setHTML(e.features[0].properties.DESCRIPTION)
+                    .setHTML(e.features[0].properties.DESCRIPTION ?? "Hedgerow")
                     .addTo(map);
             });
 
@@ -396,53 +396,64 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
 
             //Attach modal opening function to map
             map.on('click', (e) => {
-                const bbox = [
-                    [e.point.x - 5, e.point.y - 5],
-                    [e.point.x + 5, e.point.y + 5]
-                ];
 
-                let features = map.queryRenderedFeatures(bbox, {
-                    layers: ['farms']
+                let features = [];
+
+                const clickPoint = {
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [e.lngLat.lng, e.lngLat.lat]
+                    }
+                };
+
+                const drawFeatures = draw.getAll().features;
+                const tolerance = 0.02 //kilometres tolerance
+
+                drawFeatures.forEach(feature => {
+                    if (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon') {
+                        if (turf.booleanPointInPolygon(clickPoint, feature)) {
+                            features.push(feature);
+                        }
+                    }
+                    else if (feature.geometry.type === 'LineString') {
+                        if (turf.nearestPointOnLine(feature, clickPoint).properties.dist <= tolerance) {
+                            features.push(feature);
+                        }
+                    }
+                    else if (feature.geometry.type === 'Point') {
+                        if (turf.distance(clickPoint, feature) <= tolerance) {
+                            features.push(feature);
+                        }
+                    }
+                    else {
+                        console.log(feature.geometry.type)
+                    }
                 });
 
                 if (features.length > 0) {
-                    openModal(features[0], geojson, map);
+                    console.log("Clicked features: ", features)
+                    openModal(features[0], drawFeatures, map);
                 }
                 else {
-                    const clickPoint = {
-                        type: 'Feature',
-                        geometry: {
-                            type: 'Point',
-                            coordinates: [e.lngLat.lng, e.lngLat.lat]
-                        }
-                    };
+                    const bbox = [
+                        [e.point.x - 5, e.point.y - 5],
+                        [e.point.x + 5, e.point.y + 5]
+                    ];
 
-                    const drawFeatures = draw.getAll().features;
-                    const tolerance = 0.02 //kilometres tolerance
-
-                    drawFeatures.forEach(feature => {
-                        if (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon') {
-                            if (turf.booleanPointInPolygon(clickPoint, feature)) {
-                                features.push(feature);
-                            }
-                        }
-                        else if (feature.geometry.type === 'LineString') {
-                            if (turf.nearestPointOnLine(feature, clickPoint).properties.dist <= tolerance) {
-                                features.push(feature);
-                            }
-                        }
-                        else if (feature.geometry.type === 'Point') {
-                            if (turf.distance(clickPoint, feature) <= tolerance) {
-                                features.push(feature);
-                            }
-                        }
-                        else {
-                            console.log(feature.geometry.type)
-                        }
+                    features = map.queryRenderedFeatures(bbox, {
+                        layers: ['farms']
                     });
 
                     if (features.length > 0) {
-                        openModal(features[0], drawFeatures, map);
+                        console.log("Clicked features: ", features)
+                        features.sort((a, b) => {
+                            if ('length' in a && 'length' in b) return 0;
+                            if ('length' in a) return -1;
+                            if ('length' in b) return 1;
+                            return 0;
+                        });
+                        openModal(features[0], geojson, map);
                     }
                 }
             });
@@ -477,7 +488,7 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
     }
 
     //Main script thread starts
-    async function getGeoJSON(sbiNumber, firstName, lastName) {
+    async function getGeoJSON(sbiNumber, firstName, lastName, email) {
         let geojson;
 
         try {
@@ -489,7 +500,7 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
 
         if (!geojson) {
             try {
-                const response = await fetch(`https://eu-west-1.aws.data.mongodb-api.com/app/application-0-npilpbx/endpoint/landcover?SBI=${sbiNumber}&first=${firstName}&last=${lastName}`);
+                const response = await fetch(`https://eu-west-1.aws.data.mongodb-api.com/app/application-0-npilpbx/endpoint/rpadata?SBI=${sbiNumber}&first=${firstName}&last=${lastName}&email=${email}`);
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
@@ -529,5 +540,5 @@ function initMap(sbiNumber, firstName, lastName, geojson = undefined) {
         }
     }
 
-    getGeoJSON(sbiNumber, firstName, lastName)
+    getGeoJSON(sbiNumber, firstName, lastName, email)
 }
