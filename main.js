@@ -87,8 +87,8 @@ function initMap(sbiNumber, firstName, lastName, email, geojson = undefined ) {
             form.classList.add('table-form');
             form.innerHTML = `
                 <input type="hidden" name="ID" class="hidden-input" value="${obj.properties.ID ?? obj.id}">
-                <input type="text" name="CROP" class="table-cell-wrapper crop" value="${obj.properties.CROP ?? ""}">
-                <input type="text" name="FIELD_NAME" class="table-cell-wrapper field_name" value="${obj.properties.FIELD_NAME ?? ""}">
+                <input type="text" placeholder="Enter current rotation" name="CROP" class="table-cell-wrapper crop" value="${obj.properties.CROP ?? ""}">
+                <input type="text" placeholder="Enter field name" name="FIELD_NAME" class="table-cell-wrapper field_name" value="${obj.properties.FIELD_NAME ?? ""}">
                 <input type="text" name="SHEET_ID" class="table-cell-wrapper sheet-id" value="${obj.properties.SHEET_ID}">
                 <input type="text" name="PARCEL_ID" class="table-cell-wrapper parcel-id" value="${obj.properties.PARCEL_ID}">
                 <input type="text" name="DESCRIPTION" class="table-cell-wrapper description" value="${obj.properties.DESCRIPTION}">
@@ -493,22 +493,36 @@ function initMap(sbiNumber, firstName, lastName, email, geojson = undefined ) {
 
         try {
             memberstackData = await window.$memberstackDom.getMemberJSON();
-            geojson = memberstackData.data
+            if (!memberstackData.data.hasOwnProperty('features')) {
+                geojson = memberstackData.data;
+            }
         } catch (error) {
-            console.error('Error fetching from Memberstack:', error);
+            console.warn("Couldn't fetch geojson from Memberstack:", error);
         }
 
         if (!geojson) {
+            let sbi = sbiNumber;
+            if (!sbi) {
+                try {
+                    const memberstackSBI = await window.$memberstackDom.getCurrentMember()
+                    sbi = memberstackSBI.data.customFields.sbi
+                } catch (e){
+                    console.warn("No existing SBI in memberstack")
+                }
+            }
             try {
-                const response = await fetch(`https://eu-west-1.aws.data.mongodb-api.com/app/application-0-npilpbx/endpoint/rpadata?SBI=${sbiNumber}&first=${firstName}&last=${lastName}&email=${email}`);
+                const response = await fetch(`https://eu-west-1.aws.data.mongodb-api.com/app/application-0-npilpbx/endpoint/rpadata?SBI=${sbi}&first=${firstName}&last=${lastName}&email=${email}`);
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
                 geojson = await response.json();
+                console.log(geojson.features.length)
+                geojson.features = geojson.features.filter(feature => feature.properties.AREA_HA > 0.1);
+                console.log(geojson.features.length)
                 try {
                     await window.$memberstackDom.updateMemberJSON({json: geojson})
                 } catch (error) {
-                    console.error('Error sending to Memberstack:', error);
+                    console.warn("Couldn't send geojson to Memberstack:", error);
                 }
             } catch (error) {
                 alert("No data found for this SBI number. Please try again.")
