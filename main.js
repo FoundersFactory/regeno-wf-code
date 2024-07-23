@@ -493,7 +493,7 @@ function initMap(sbiNumber, firstName, lastName, email, geojson = undefined ) {
 
         try {
             memberstackData = await window.$memberstackDom.getMemberJSON();
-            if (!memberstackData.data.hasOwnProperty('features')) {
+            if (memberstackData.data.hasOwnProperty('features')) {
                 geojson = memberstackData.data;
             }
         } catch (error) {
