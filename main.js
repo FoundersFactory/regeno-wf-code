@@ -511,14 +511,23 @@ function initMap(sbiNumber, firstName, lastName, email, geojson = undefined ) {
                 }
             }
             try {
-                const response = await fetch(`https://eu-west-1.aws.data.mongodb-api.com/app/application-0-npilpbx/endpoint/rpadata?SBI=${sbi}&first=${firstName}&last=${lastName}&email=${email}`);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                const sbis = sbi.split(", ");
+                geojsonMerged = {}
+                for (const sbi1 of sbis) {
+                    const response = await fetch(`https://eu-west-1.aws.data.mongodb-api.com/app/application-0-npilpbx/endpoint/rpadata?SBI=${sbi1}&first=${firstName}&last=${lastName}&email=${email}`);
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    geojson = await response.json();
+                    if (geojsonMerged.features === undefined) {
+                        geojsonMerged = geojson
+                    } else {
+                        geojsonMerged.features.push(...geojson.features)
+                    }
                 }
-                geojson = await response.json();
-                console.log(geojson.features.length)
-                geojson.features = geojson.features.filter(feature => feature.properties.AREA_HA > 0.1);
-                console.log(geojson.features.length)
+                console.log(geojsonMerged.features.length)
+                geojson.features = geojsonMerged.features.filter(feature => feature.properties.AREA_HA > 0.1);
+                console.log(geojsonMerged.features.length)
                 try {
                     await window.$memberstackDom.updateMemberJSON({json: geojson})
                 } catch (error) {
