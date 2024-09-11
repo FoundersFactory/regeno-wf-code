@@ -526,12 +526,28 @@ function initMap(sbiNumber, firstName, lastName, email, geojson = undefined ) {
                     }
                 }
                 console.log(geojsonMerged.features.length)
+
+                // save merged geoJSON to memberstack
                 geojson.features = geojsonMerged.features.filter(feature => feature.properties.AREA_HA > 0.1);
                 console.log(geojsonMerged.features.length)
                 try {
                     await window.$memberstackDom.updateMemberJSON({json: geojson})
                 } catch (error) {
                     console.warn("Couldn't send geojson to Memberstack:", error);
+                }
+                
+                //save total hectares to a memberstack custom field
+                try {
+                    const customFields = { 
+                        'total-hectares': geojsonMerged["total_ha"]
+                    }; 
+                    
+                    // Update current member's custom fields 
+                    await window.$memberstackDom.updateMember({ 
+                        customFields 
+                    });
+                } catch (error) {
+                    console.warn("Couldn't save total hectares to Memberstack:", error);
                 }
             } catch (error) {
                 alert("No data found for this SBI number. Please try again.")
